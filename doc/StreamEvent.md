@@ -1,5 +1,8 @@
 # How to subscribe/unsubscribe to stream notifications?
 
+## Basic flow:
+1. POST to `https://api.twitch.tv/helix/webhooks/hub`
+
 ### **POST** to https://api.twitch.tv/helix/webhooks/hub
 
 JSON Body
@@ -19,6 +22,7 @@ JSON Body
 * `hub.lease_seconds` is the length in seconds for how long the subscription will last, max of 10 days (864000 seconds)
 * `hub.callback` is the URL that twitch will **POST** to with the following JSON body
     * Each user should have their own callback URL since the offline event doesn't directly indicate the user going offline
+    * **IMPORTANT** - Make sure you respond with a 2xx HTTP code
 > If stream went offline
 ```JSON
 {
@@ -45,3 +49,9 @@ JSON Body
     ]
 }
 ```
+
+## Confirming Subscription
+> https://dev.twitch.tv/docs/api/webhooks-guide#subscriptions
+
+After your **POST**, you will receive a **GET** request to `hub.callback` with a `hub.challenge` query parameter.
+You should send a simple `text/plain` response with the **value** of `hub.challenge`
