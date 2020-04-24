@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -31,8 +32,12 @@ namespace PixelDiscordBot.Services
             return -1;
         }
 
+        private static readonly Dictionary<long, string> _nameCache = new Dictionary<long, string>();
+
         public async Task<string> GetGameName(long gameId)
         {
+            if (_nameCache.ContainsKey(gameId))
+                return _nameCache[gameId];
             var url = $"https://api.twitch.tv/helix/games?id={gameId}";
             var client = new WebClient();
             client.Headers["Client-ID"] = _config.Twitch.ClientId;
@@ -42,9 +47,11 @@ namespace PixelDiscordBot.Services
             if (data.GetArrayLength() == 0) return null;
             foreach (var ele in data.EnumerateArray())
             {
-                return ele.GetProperty("name").GetString();
+                var name = ele.GetProperty("name").GetString();
+                _nameCache.Add(gameId, name);
+                return name;
             }
-            return null;
+            return "Unknown";
         }
     }
 }
