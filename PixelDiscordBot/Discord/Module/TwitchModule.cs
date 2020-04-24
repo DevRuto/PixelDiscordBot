@@ -41,6 +41,13 @@ namespace PixelDiscordBot.Discord.Module
                     Streamers = new List<string>()
                 };
                 await _db.Guilds.AddAsync(guild);
+                await _db.SaveChangesAsync();
+            }
+
+            if (guild.StreamChannelId == 0)
+            {
+                await ReplyAsync("Please set the stream output channel `twitch setchannel #streams` before adding streamers");
+                return;
             }
 
             var userId = await _twitch.GetUserId(username);
@@ -60,6 +67,7 @@ namespace PixelDiscordBot.Discord.Module
                         Id = userId,
                         Username = username
                     });
+                    await _twitch.Subscribe(userId, username);
                 }
                 await ReplyAsync($"**{username}** added");
             }
@@ -105,6 +113,10 @@ namespace PixelDiscordBot.Discord.Module
         [Command("setchannel")]
         public async Task SetStreamChannel(IChannel channel)
         {
+            var guildId = this.Context.Guild.Id;
+            var guild = await _db.Guilds.FindAsync(guildId);
+            guild.StreamChannelId = channel.Id;
+            await _db.SaveChangesAsync();
             await ReplyAsync($"Stream channel set to <#{channel.Id}>");
         }
     }

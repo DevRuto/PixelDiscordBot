@@ -64,7 +64,7 @@ namespace PixelDiscordBot
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DiscordBot bot, DiscordContext ctx)
         {
             ctx.Database.EnsureCreated();
-            bot.Start();
+            Task.WaitAll(bot.Start());
 
             if (env.IsDevelopment())
             {
