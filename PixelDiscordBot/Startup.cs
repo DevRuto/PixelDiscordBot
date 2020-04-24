@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -43,6 +45,11 @@ namespace PixelDiscordBot
             services.AddSingleton<TwitchService>();
             services.AddSingleton<DiscordBot>();
 
+            services.AddDbContext<DiscordContext>(options =>
+            {
+                options.UseInMemoryDatabase("Discord");
+            });
+
             services.AddControllers()
                 .AddJsonOptions(options =>
                 {
@@ -53,8 +60,9 @@ namespace PixelDiscordBot
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DiscordBot bot)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DiscordBot bot, DiscordContext ctx)
         {
+            ctx.Database.EnsureCreated();
             bot.Start();
 
             if (env.IsDevelopment())

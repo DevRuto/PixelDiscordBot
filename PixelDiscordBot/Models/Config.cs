@@ -4,6 +4,7 @@ namespace PixelDiscordBot.Models
     {
         public TwitchConfig Twitch { get; set; }
         public DiscordConfig Discord { get; set; }
+        public string CallbackUrl { get; set; }
     
         public class TwitchConfig
         {
