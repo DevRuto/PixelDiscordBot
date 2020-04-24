@@ -16,7 +16,7 @@ namespace PixelDiscordBot.Services
             _config = config;
         }
     
-        public async Task<long> GetUserId(string username)
+        public async Task<ulong> GetUserId(string username)
         {
             var url = $"https://api.twitch.tv/helix/users?login={username}";
             var client = new WebClient();
@@ -24,12 +24,12 @@ namespace PixelDiscordBot.Services
             var response = await client.DownloadStringTaskAsync(new Uri(url));
             using var doc = JsonDocument.Parse(response);
             var data = doc.RootElement.GetProperty("data");
-            if (data.GetArrayLength() == 0) return -1;
+            if (data.GetArrayLength() == 0) return 0;
             foreach (var ele in data.EnumerateArray())
             {
-                return long.Parse(ele.GetProperty("id").GetString());
+                return ulong.Parse(ele.GetProperty("id").GetString());
             }
-            return -1;
+            return 0;
         }
 
         private static readonly Dictionary<long, string> _nameCache = new Dictionary<long, string>();
