@@ -32,10 +32,6 @@ namespace PixelDiscordBot.Discord
         {
             // Register modules that are public and inherit ModuleBase<T>.
             var modules = await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
-            foreach (var module in modules)
-            {
-                Console.WriteLine(module.Name);
-            }
         }
 
         public async Task MessageReceivedAsync(SocketMessage rawMessage)

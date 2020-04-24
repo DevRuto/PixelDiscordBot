@@ -13,20 +13,25 @@ namespace PixelDiscordBot.Discord
     {
         private Config _config;
         private ILogger _logger;
+        private IServiceCollection _serviceCollection;
+        private DiscordSocketClient _client;
 
-        public DiscordBot(Config config, ILogger<DiscordBot> logger)
+        public DiscordBot(Config config, ILogger<DiscordBot> logger, IServiceCollection serviceCollection)
         {
             _config = config;
             _logger = logger;
+            _serviceCollection = serviceCollection;
         }
+
+        public DiscordSocketClient GetClient() => _client;
 
         public async Task Start()
         {
             var services = ConfigureServices();
-            var client = services.GetRequiredService<DiscordSocketClient>();
+            _client = services.GetRequiredService<DiscordSocketClient>();
 
-            await client.LoginAsync(TokenType.Bot, _config.Discord.Token);
-            await client.StartAsync();
+            await _client.LoginAsync(TokenType.Bot, _config.Discord.Token);
+            await _client.StartAsync();
 
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
@@ -35,7 +40,7 @@ namespace PixelDiscordBot.Discord
 
         private ServiceProvider ConfigureServices()
         {
-            return new ServiceCollection()
+            return _serviceCollection
                 .AddSingleton<DiscordSocketClient>()
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
