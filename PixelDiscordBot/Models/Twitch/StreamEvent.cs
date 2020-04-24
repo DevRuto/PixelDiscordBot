@@ -1,4 +1,4 @@
-namespace PixelDiscordBot.Models
+namespace PixelDiscordBot.Models.Twitch
 {
     public class StreamEvent
     {
