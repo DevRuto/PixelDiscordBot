@@ -5,7 +5,7 @@
 
 ## **GET** https://api.twitch.tv/helix/users
 > Query Parameters
-* `id` - ID of the game
+* `login` - name of the user
 
 ## Response
 ```JSON
