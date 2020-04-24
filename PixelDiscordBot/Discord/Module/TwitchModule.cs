@@ -61,22 +61,45 @@ namespace PixelDiscordBot.Discord.Module
                         Username = username
                     });
                 }
-                await ReplyAsync($"{username} added");
+                await ReplyAsync($"**{username}** added");
             }
 
             await _db.SaveChangesAsync();
         }
 
         [Command("remove")]
-        public async Task RemoveStreamer()
+        public async Task RemoveStreamer(string username)
         {
-
+            var guildId = this.Context.Guild.Id;
+            var guild = await _db.Guilds.FindAsync(guildId);
+            if (guild == null || guild.Streamers.Count == 0)
+            {
+                await ReplyAsync("No streamers being tracked");
+            }
+            else
+            {
+                if (guild.Streamers.Contains(username))
+                {
+                    guild.Streamers.Remove(username);
+                    await ReplyAsync($"**{username}** removed");
+                }
+            }
+            await _db.SaveChangesAsync();
         }
 
         [Command("list")]
         public async Task ListStreamers()
         {
-
+            var guildId = this.Context.Guild.Id;
+            var guild = await _db.Guilds.FindAsync(guildId);
+            if (guild == null || guild.Streamers.Count == 0)
+            {
+                await ReplyAsync("No streamers being tracked");
+            }
+            else
+            {
+                await ReplyAsync("Tracking following streamers: " + string.Join(", ", guild.Streamers));
+            }
         }
 
         [Command("setchannel")]
