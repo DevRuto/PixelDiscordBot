@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.AspNetCore.Mvc;
 using PixelDiscordBot.Discord;
+using PixelDiscordBot.Models;
 using PixelDiscordBot.Models.Twitch;
 using PixelDiscordBot.Services;
 
@@ -17,11 +19,23 @@ namespace PixelDiscordBot.Controllers
     {
         private TwitchService _service;
         private DiscordSocketClient _discord;
+        private DiscordContext _db;
 
-        public TwitchController(TwitchService service, DiscordBot discord)
+        public TwitchController(TwitchService service, DiscordBot discord, DiscordContext ctx)
         {
             _service = service;
             _discord = discord.GetClient();
+            _db = ctx;
+        }
+
+        [HttpGet("debug")]
+        public async Task<IActionResult> Test()
+        {
+            return Ok(new object[]
+            {
+                await _db.Streamers.ToListAsync(),
+                await _db.Guilds.ToListAsync()
+            });
         }
 
         /// hub.challenge handler
@@ -42,7 +56,7 @@ namespace PixelDiscordBot.Controllers
             if (!_messageCache.ContainsKey(username))
                 _messageCache.Add(username, new List<RestUserMessage>());
 
-            ulong channelId = 687151981403439114;
+            ulong channelId = 703344750799093811;
             var channel = (SocketTextChannel)_discord.GetChannel(channelId);
             if (streamEvents.Data.Length == 0)
             {
