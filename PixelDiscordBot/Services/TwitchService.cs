@@ -11,6 +11,8 @@ namespace PixelDiscordBot.Services
     public class TwitchService
     {
         private Config _config;
+        private static readonly Dictionary<long, string> _nameCache = new Dictionary<long, string>();
+
         public TwitchService(Config config)
         {
             _config = config;
@@ -32,8 +34,6 @@ namespace PixelDiscordBot.Services
             return 0;
         }
 
-        private static readonly Dictionary<long, string> _nameCache = new Dictionary<long, string>();
-
         public async Task<string> GetGameName(long gameId)
         {
             if (_nameCache.ContainsKey(gameId))
@@ -52,6 +52,24 @@ namespace PixelDiscordBot.Services
                 return name;
             }
             return "Unknown";
+        }
+
+        public async Task Subscribe(ulong userId, string username)
+        {
+            var client = new WebClient();
+            client.Headers["Client-ID"] = _config.Twitch.ClientId;
+            client.Headers[HttpRequestHeader.ContentType] = "application/json";
+            var body = @"
+            {
+                ""hub.callback"": ""{callbackurl}"",
+                ""hub.mode"": ""subscribe"",
+                ""hub.topic"": ""https://api.twitch.tv/helix/streams?user_id={userid}"",
+                ""hub.lease_seconds"": 86400,
+                ""hub.secret"": ""my secret""
+            }";
+            body = body.Replace("{userid}", userId.ToString());
+            body = body.Replace("{callbackurl}", $"{_config.CallbackUrl}/{username}");
+            await client.UploadStringTaskAsync("https://api.twitch.tv/helix/webhooks/hub", body);
         }
     }
 }
