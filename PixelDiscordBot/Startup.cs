@@ -30,18 +30,26 @@ namespace PixelDiscordBot
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<TwitchService>();
-            services.AddSingleton<DiscordBot>();
-
-            var options = new JsonSerializerOptions
+            var jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = new SnakeCaseNamingPolicy(),
                 PropertyNameCaseInsensitive = true
             };
-            var config = JsonSerializer.Deserialize<Config>(File.ReadAllText("../config.json"), options);
+            var config = JsonSerializer.Deserialize<Config>(File.ReadAllText("../config.json"), jsonOptions);
             services.AddSingleton(config);
 
-            services.AddControllers();
+            services.AddSingleton<IServiceCollection>(services);
+
+            services.AddSingleton<TwitchService>();
+            services.AddSingleton<DiscordBot>();
+
+            services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.PropertyNamingPolicy = jsonOptions.PropertyNamingPolicy;
+                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                    options.JsonSerializerOptions.Converters.Add(new DateTimeConverter());
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -2,6 +2,6 @@ namespace PixelDiscordBot.Models
 {
     public class Event
     {
-        public StreamEvent[] Data;
+        public StreamEvent[] Data { get; set; }
     }
 }
