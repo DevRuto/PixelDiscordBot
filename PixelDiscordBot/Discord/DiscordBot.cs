@@ -110,7 +110,6 @@ namespace PixelDiscordBot.Discord
                         .AddField("Title", streamEvent.Title, false)
                         .AddField("Date", streamEvent.StartedAt.ToLongDateString(), true)
                         .AddField("Game", await _twitch.GetGameName(streamEvent.GameId), true)
-                        .AddField("Viewers", streamEvent.ViewerCount, true)
                         .WithColor(Color.Red)
                         .WithUrl($"https://twitch.tv/{streamEvent.UserName}")
                         .WithImageUrl(streamEvent.ThumbnailUrl.Replace("{width}", "1280").Replace("{height}", "720"))
