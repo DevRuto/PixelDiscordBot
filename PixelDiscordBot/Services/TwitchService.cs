@@ -66,7 +66,7 @@ namespace PixelDiscordBot.Services
             {
                 using (var client = new HttpClient())
                 {
-                    var json = $@"{{ ""hub.callback"": ""{_config.CallbackUrl}/{username}"", ""hub.mode"": ""subscribe"", ""hub.topic"": ""https://api.twitch.tv/helix/streams?user_id={userid}"", ""hub.lease_seconds"": 86400, ""hub.secret"": """" }}";
+                    var json = $@"{{ ""hub.callback"": ""{_config.CallbackUrl}/{username}"", ""hub.mode"": ""subscribe"", ""hub.topic"": ""https://api.twitch.tv/helix/streams?user_id={userId}"", ""hub.lease_seconds"": 86400, ""hub.secret"": """" }}";
                     var response = await client.PostAsync(
                         "https://api.twitch.tv/helix/webhooks/hub",
                         new StringContent(json, Encoding.UTF8, "application/json")
