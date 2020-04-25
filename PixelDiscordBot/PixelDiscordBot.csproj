@@ -20,7 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="nlog.config" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="nlog.config" CopyToOutputDirectory="Always" />
+    <Content Update="config.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
 </Project>

@@ -38,7 +38,7 @@ namespace PixelDiscordBot
                 PropertyNamingPolicy = new SnakeCaseNamingPolicy(),
                 PropertyNameCaseInsensitive = true
             };
-            var config = JsonSerializer.Deserialize<Config>(File.ReadAllText("../config.json"), jsonOptions);
+            var config = JsonSerializer.Deserialize<Config>(File.ReadAllText("config.json"), jsonOptions);
             services.AddSingleton(config);
 
             services.AddDbContext<DiscordContext>(options =>
