@@ -72,6 +72,9 @@ namespace PixelDiscordBot.Services
         {
             if (force || _trackedStreamers.Find(streamer => streamer.Id == userId) == null)
             {
+                if (_trackedStreamers.Find(streamer => streamer.Id == userId) == null)
+                    _trackedStreamers.Add(new Streamer { Id = userId, Username = username });
+
                 _logger.LogInformation($"[TWITCH] Subscribing to {username}");
                 try
                 {
@@ -84,8 +87,6 @@ namespace PixelDiscordBot.Services
                             new StringContent(json, Encoding.UTF8, "application/json")
                         );
                         _logger.LogInformation($"[TWITCH] {username} subscribe Result: {response.StatusCode}");
-                        if (_trackedStreamers.Find(streamer => streamer.Id == userId) == null)
-                            _trackedStreamers.Add(new Streamer { Id = userId, Username = username });
                     }
                 }
                 catch (Exception ex)

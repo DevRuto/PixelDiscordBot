@@ -21,7 +21,6 @@ namespace PixelDiscordBot.Discord
         private IServiceCollection _serviceCollection;
         private DiscordSocketClient _client;
         private TwitchService _twitch;
-        private DiscordContext _db;
 
         public DiscordBot(Config config, ILogger<DiscordBot> logger, IServiceCollection serviceCollection, TwitchService twitch)
         {
@@ -42,9 +41,13 @@ namespace PixelDiscordBot.Discord
             await _client.StartAsync();
 
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
-            (await _db.Streamers.ToListAsync()).ForEach(async streamer => await _twitch.Subscribe(streamer.Id, streamer.Username, true));
 
             _logger.LogInformation("Discord Bot started");
+
+            var db = services.GetRequiredService<DiscordContext>();
+            (await db.Streamers.ToListAsync()).ForEach(async streamer => await _twitch.Subscribe(streamer.Id, streamer.Username, true));
+
+            _logger.LogInformation("Streamers loaded");
         }
 
         private ServiceProvider ConfigureServices()
