@@ -76,11 +76,7 @@ namespace PixelDiscordBot.Discord
             {
                 var streamEvent = streamEvents.Data[0];
                 var messages = _messageCache[username];
-                var gameName = "null";
-                if (long.TryParse(streamEvent.GameId, out long gameId))
-                {
-                    gameName = await _twitch.GetGameName(long.Parse(streamEvent.GameId));
-                }
+                var gameName = await _twitch.GetGameName(streamEvent.GameId);
 
                 if (messages.Count == 0)
                 {
@@ -113,7 +109,7 @@ namespace PixelDiscordBot.Discord
                         .WithTitle($"{streamEvent.UserName} went live")
                         .AddField("Title", streamEvent.Title, false)
                         .AddField("Date", streamEvent.StartedAt.ToLongDateString(), true)
-                        .AddField("Game", await _twitch.GetGameName(long.Parse(streamEvent.GameId)), true)
+                        .AddField("Game", await _twitch.GetGameName(streamEvent.GameId), true)
                         .AddField("Viewers", streamEvent.ViewerCount, true)
                         .WithColor(Color.Red)
                         .WithUrl($"https://twitch.tv/{streamEvent.UserName}")

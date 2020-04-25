@@ -15,7 +15,10 @@ namespace PixelDiscordBot.Services
     {
         private Config _config;
         private ILogger<TwitchService> _logger;
-        private static readonly Dictionary<long, string> _nameCache = new Dictionary<long, string>();
+        private static readonly Dictionary<ulong, string> _nameCache = new Dictionary<ulong, string>
+        {
+            { 0, "null" }
+        };
 
         public TwitchService(Config config, ILogger<TwitchService> logger)
         {
@@ -39,8 +42,10 @@ namespace PixelDiscordBot.Services
             return 0;
         }
 
-        public async Task<string> GetGameName(long gameId)
+        public async Task<string> GetGameName(string strGameId)
         {
+            ulong gameId = 0;
+            ulong.TryParse(strGameId, out gameId);
             if (_nameCache.ContainsKey(gameId))
                 return _nameCache[gameId];
             var url = $"https://api.twitch.tv/helix/games?id={gameId}";
