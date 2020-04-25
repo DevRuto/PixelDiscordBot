@@ -59,6 +59,7 @@ namespace PixelDiscordBot.Services
 
         public async Task Subscribe(ulong userId, string username)
         {
+            _logger.LogInformation($"[TWITCH] Subscribing to {username}");
             var client = new WebClient();
             client.Headers["Client-ID"] = _config.Twitch.ClientId;
             client.Headers[HttpRequestHeader.ContentType] = "application/json";
@@ -72,7 +73,6 @@ namespace PixelDiscordBot.Services
             }";
             body = body.Replace("{userid}", userId.ToString());
             body = body.Replace("{callbackurl}", $"{_config.CallbackUrl}/{username}");
-            _logger.LogDebug($"[TWITCH] Subscribing to {username}");
             await client.UploadStringTaskAsync("https://api.twitch.tv/helix/webhooks/hub", body);
         }
     }
