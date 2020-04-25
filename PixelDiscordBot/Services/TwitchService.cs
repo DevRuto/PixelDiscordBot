@@ -4,6 +4,7 @@ using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using PixelDiscordBot.Models;
 
 namespace PixelDiscordBot.Services
@@ -11,11 +12,13 @@ namespace PixelDiscordBot.Services
     public class TwitchService
     {
         private Config _config;
+        private ILogger<TwitchService> _logger;
         private static readonly Dictionary<long, string> _nameCache = new Dictionary<long, string>();
 
-        public TwitchService(Config config)
+        public TwitchService(Config config, ILogger<TwitchService> logger)
         {
             _config = config;
+            _logger = logger;
         }
     
         public async Task<ulong> GetUserId(string username)
@@ -69,6 +72,7 @@ namespace PixelDiscordBot.Services
             }";
             body = body.Replace("{userid}", userId.ToString());
             body = body.Replace("{callbackurl}", $"{_config.CallbackUrl}/{username}");
+            _logger.LogDebug($"[TWITCH] Subscribing to {username}");
             await client.UploadStringTaskAsync("https://api.twitch.tv/helix/webhooks/hub", body);
         }
     }
