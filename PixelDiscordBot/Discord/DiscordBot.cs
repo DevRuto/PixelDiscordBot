@@ -42,6 +42,7 @@ namespace PixelDiscordBot.Discord
             await _client.StartAsync();
 
             await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
+            (await _db.Streamers.ToListAsync()).ForEach(async streamer => await _twitch.Subscribe(streamer.Id, streamer.Username, true));
 
             _logger.LogInformation("Discord Bot started");
         }

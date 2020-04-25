@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -8,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using PixelDiscordBot.Models;
+using PixelDiscordBot.Models.Discord;
 
 namespace PixelDiscordBot.Services
 {
@@ -64,40 +66,39 @@ namespace PixelDiscordBot.Services
             return "Unknown";
         }
 
-        public async Task Subscribe(ulong userId, string username)
+        private static List<Streamer> _trackedStreamers = new List<Streamer>();
+
+        public async Task Subscribe(ulong userId, string username, bool force = false)
         {
-            _logger.LogInformation($"[TWITCH] Subscribing to {username}");
-            try
+            if (force || _trackedStreamers.Find(streamer => streamer.Id == userId) == null)
             {
-                using (var client = new HttpClient())
+                _logger.LogInformation($"[TWITCH] Subscribing to {username}");
+                try
                 {
-                    client.DefaultRequestHeaders.Add("Client-ID", _config.Twitch.ClientId);
-                    var json = $@"{{ ""hub.callback"": ""{_config.CallbackUrl}/{username}"", ""hub.mode"": ""subscribe"", ""hub.topic"": ""https://api.twitch.tv/helix/streams?user_id={userId}"", ""hub.lease_seconds"": 172800, ""hub.secret"": """" }}";
-                    var response = await client.PostAsync(
-                        "https://api.twitch.tv/helix/webhooks/hub",
-                        new StringContent(json, Encoding.UTF8, "application/json")
-                    );
-                    _logger.LogInformation($"[TWITCH] {username} subscribe Result: {response.StatusCode}");
+                    using (var client = new HttpClient())
+                    {
+                        client.DefaultRequestHeaders.Add("Client-ID", _config.Twitch.ClientId);
+                        var json = $@"{{ ""hub.callback"": ""{_config.CallbackUrl}/{username}"", ""hub.mode"": ""subscribe"", ""hub.topic"": ""https://api.twitch.tv/helix/streams?user_id={userId}"", ""hub.lease_seconds"": 108000‬, ""hub.secret"": ""asdf"" }}";
+                        var response = await client.PostAsync(
+                            "https://api.twitch.tv/helix/webhooks/hub",
+                            new StringContent(json, Encoding.UTF8, "application/json")
+                        );
+                        _logger.LogInformation($"[TWITCH] {username} subscribe Result: {response.StatusCode}");
+                        if (_trackedStreamers.Find(streamer => streamer.Id == userId) == null)
+                            _trackedStreamers.Add(new Streamer { Id = userId, Username = username });
+                    }
                 }
-                // var client = new WebClient();
-                // client.Headers["Client-ID"] = _config.Twitch.ClientId;
-                // client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                // var body = @"
-                // {
-                //     ""hub.callback"": ""{callbackurl}"",
-                //     ""hub.mode"": ""subscribe"",
-                //     ""hub.topic"": ""https://api.twitch.tv/helix/streams?user_id={userid}"",
-                //     ""hub.lease_seconds"": 86400,
-                //     ""hub.secret"": ""my secret""
-                // }";
-                // body = body.Replace("{userid}", userId.ToString());
-                // body = body.Replace("{callbackurl}", $"{_config.CallbackUrl}/{username}");
-                // await client.UploadStringTaskAsync("https://api.twitch.tv/helix/webhooks/hub", body);
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(ex, "Welp");
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogCritical(ex, "Welp");
-            }
+        }
+
+        public Task RenewSubscriptions()
+        {
+            _trackedStreamers.ForEach(async streamer => await Subscribe(streamer.Id, streamer.Username, true));
+            return Task.CompletedTask;
         }
     }
 }

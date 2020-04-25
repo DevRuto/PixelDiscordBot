@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PixelDiscordBot.Discord;
+using PixelDiscordBot.Jobs;
 using PixelDiscordBot.Models;
 using PixelDiscordBot.Serialization;
 using PixelDiscordBot.Services;
@@ -50,6 +51,8 @@ namespace PixelDiscordBot
 
             services.AddSingleton<TwitchService>();
             services.AddSingleton<DiscordBot>();
+
+            services.AddHostedService<SubscriptionJob>();
 
             services.AddControllers()
                 .AddJsonOptions(options =>
