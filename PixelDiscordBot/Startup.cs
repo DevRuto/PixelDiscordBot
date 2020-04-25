@@ -42,7 +42,8 @@ namespace PixelDiscordBot
 
             services.AddDbContext<DiscordContext>(options =>
             {
-                options.UseInMemoryDatabase("Discord");
+                // options.UseInMemoryDatabase("Discord");
+                options.UseSqlite("Data Source=discordbot.sqlite3");
             });
 
             services.AddSingleton<IServiceCollection>(services);
