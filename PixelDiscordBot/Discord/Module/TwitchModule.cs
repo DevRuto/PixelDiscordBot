@@ -60,6 +60,7 @@ namespace PixelDiscordBot.Discord.Module
             else
             {
                 guild.Streamers.Add(username);
+                _db.Guilds.Update(guild);
                 if (await _db.Streamers.FindAsync(userId) == null)
                 {
                     await _db.Streamers.AddAsync(new Streamer
