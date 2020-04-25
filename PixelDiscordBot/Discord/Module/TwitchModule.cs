@@ -115,6 +115,17 @@ namespace PixelDiscordBot.Discord.Module
         {
             var guildId = this.Context.Guild.Id;
             var guild = await _db.Guilds.FindAsync(guildId);
+            if (guild == null)
+            {
+                guild = new Guild
+                {
+                    Id = guildId,
+                    StreamChannelId = 0,
+                    Streamers = new List<string>()
+                };
+                await _db.Guilds.AddAsync(guild);
+                await _db.SaveChangesAsync();
+            }
             guild.StreamChannelId = channel.Id;
             await _db.SaveChangesAsync();
             await ReplyAsync($"Stream channel set to <#{channel.Id}>");

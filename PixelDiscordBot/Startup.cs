@@ -40,15 +40,15 @@ namespace PixelDiscordBot
             var config = JsonSerializer.Deserialize<Config>(File.ReadAllText("../config.json"), jsonOptions);
             services.AddSingleton(config);
 
-            services.AddSingleton<IServiceCollection>(services);
-
-            services.AddSingleton<TwitchService>();
-            services.AddSingleton<DiscordBot>();
-
             services.AddDbContext<DiscordContext>(options =>
             {
                 options.UseInMemoryDatabase("Discord");
             });
+
+            services.AddSingleton<IServiceCollection>(services);
+
+            services.AddSingleton<TwitchService>();
+            services.AddSingleton<DiscordBot>();
 
             services.AddControllers()
                 .AddJsonOptions(options =>
@@ -64,7 +64,7 @@ namespace PixelDiscordBot
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DiscordBot bot, DiscordContext ctx)
         {
             ctx.Database.EnsureCreated();
-            Task.WaitAll(bot.Start());
+            bot.Start();
 
             if (env.IsDevelopment())
             {
