@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Rest;
@@ -55,7 +56,7 @@ namespace PixelDiscordBot.Controllers
         [HttpPost("{username}")]
         public async Task<IActionResult> StreamEventHandler(string username, [FromBody] Event streamEvents)
         {
-            _logger.LogInformation($"[TWITCH] Event change for {username}");
+            _logger.LogInformation($"[TWITCH] Event change for {username} - {JsonSerializer.Serialize(streamEvents)}");
             var guilds = await _db.Guilds.ToListAsync();
             var channelIds = guilds
                                 .Where(guild => guild.Streamers.Contains(username))
