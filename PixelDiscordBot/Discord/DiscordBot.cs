@@ -76,7 +76,11 @@ namespace PixelDiscordBot.Discord
             {
                 var streamEvent = streamEvents.Data[0];
                 var messages = _messageCache[username];
-                var gameName = await _twitch.GetGameName(long.Parse(streamEvent.GameId));
+                var gameName = "null";
+                if (long.TryParse(streamEvent.GameId, out long gameId))
+                {
+                    gameName = await _twitch.GetGameName(long.Parse(streamEvent.GameId));
+                }
 
                 if (messages.Count == 0)
                 {
