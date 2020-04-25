@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -60,21 +62,31 @@ namespace PixelDiscordBot.Services
         public async Task Subscribe(ulong userId, string username)
         {
             _logger.LogInformation($"[TWITCH] Subscribing to {username}");
-            try{
-                var client = new WebClient();
-                client.Headers["Client-ID"] = _config.Twitch.ClientId;
-                client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                var body = @"
+            try
+            {
+                using (var client = new HttpClient())
                 {
-                    ""hub.callback"": ""{callbackurl}"",
-                    ""hub.mode"": ""subscribe"",
-                    ""hub.topic"": ""https://api.twitch.tv/helix/streams?user_id={userid}"",
-                    ""hub.lease_seconds"": 86400,
-                    ""hub.secret"": ""my secret""
-                }";
-                body = body.Replace("{userid}", userId.ToString());
-                body = body.Replace("{callbackurl}", $"{_config.CallbackUrl}/{username}");
-                await client.UploadStringTaskAsync("https://api.twitch.tv/helix/webhooks/hub", body);
+                    var json = $@"{{ ""hub.callback"": ""{_config.CallbackUrl}/{username}"", ""hub.mode"": ""subscribe"", ""hub.topic"": ""https://api.twitch.tv/helix/streams?user_id={userid}"", ""hub.lease_seconds"": 86400, ""hub.secret"": "" }}";
+                    var response = await client.PostAsync(
+                        "https://api.twitch.tv/helix/webhooks/hub",
+                        new StringContent(json, Encoding.UTF8, "application/json")
+                    );
+                    _logger.LogInformation($"[TWITCH] {username} subscribe Result: {response.StatusCode}");
+                }
+                // var client = new WebClient();
+                // client.Headers["Client-ID"] = _config.Twitch.ClientId;
+                // client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                // var body = @"
+                // {
+                //     ""hub.callback"": ""{callbackurl}"",
+                //     ""hub.mode"": ""subscribe"",
+                //     ""hub.topic"": ""https://api.twitch.tv/helix/streams?user_id={userid}"",
+                //     ""hub.lease_seconds"": 86400,
+                //     ""hub.secret"": ""my secret""
+                // }";
+                // body = body.Replace("{userid}", userId.ToString());
+                // body = body.Replace("{callbackurl}", $"{_config.CallbackUrl}/{username}");
+                // await client.UploadStringTaskAsync("https://api.twitch.tv/helix/webhooks/hub", body);
             }
             catch (Exception ex)
             {
