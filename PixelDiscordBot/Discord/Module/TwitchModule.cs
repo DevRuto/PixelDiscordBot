@@ -54,7 +54,7 @@ namespace PixelDiscordBot.Discord.Module
 
             if (guild.Streamers.Contains(username))
             {
-                await ReplyAsync($"{username} is already added");
+                await ReplyAsync($"{Format.Sanitize(username)} is already added");
                 return;
             }
             else
@@ -70,7 +70,7 @@ namespace PixelDiscordBot.Discord.Module
                     });
                     await _twitch.Subscribe(userId, username);
                 }
-                await ReplyAsync($"**{username}** added");
+                await ReplyAsync($"**{Format.Sanitize(username)}** added");
             }
 
             await _db.SaveChangesAsync();
@@ -90,7 +90,7 @@ namespace PixelDiscordBot.Discord.Module
                 if (guild.Streamers.Contains(username))
                 {
                     guild.Streamers.Remove(username);
-                    await ReplyAsync($"**{username}** removed");
+                    await ReplyAsync($"**{Format.Sanitize(username)}** removed");
                 }
             }
             await _db.SaveChangesAsync();
@@ -107,7 +107,7 @@ namespace PixelDiscordBot.Discord.Module
             }
             else
             {
-                await ReplyAsync("Tracking following streamers: " + string.Join(", ", guild.Streamers));
+                await ReplyAsync("Tracking following streamers: " + Format.Sanitize(string.Join(", ", guild.Streamers)));
             }
         }
 
