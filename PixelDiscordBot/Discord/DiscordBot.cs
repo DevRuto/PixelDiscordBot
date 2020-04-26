@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -66,45 +67,52 @@ namespace PixelDiscordBot.Discord
             if (!_messageCache.ContainsKey(username))
                 _messageCache.Add(username, new List<RestUserMessage>());
 
-            if (streamEvents.Data.Length == 0)
+            try
             {
-                // Offline
-                // await channel.SendMessageAsync("Stream went offline");
-
-                // Delete message
-                var messages = _messageCache[username];
-                messages.ForEach(async message => await message.DeleteAsync());
-                messages.Clear();
-            }
-            else
-            {
-                var streamEvent = streamEvents.Data[0];
-                var messages = _messageCache[username];
-                var gameName = await _twitch.GetGameName(streamEvent.GameId);
-
-                if (messages.Count == 0)
+                if (streamEvents.Data.Length == 0)
                 {
-                    // Streamer just went live
-                    foreach (var channelId in streamChannelIds)
-                    {
-                        if (channelId == 0) continue;
-                        var channel = (SocketTextChannel) _client.GetChannel(channelId);
-                        var message = await channel.SendMessageAsync(embed: await CreateStreamEmbed(streamEvent));
-                        messages.Add(message);
-                    }
+                    // Offline
+                    // await channel.SendMessageAsync("Stream went offline");
+
+                    // Delete message
+                    var messages = _messageCache[username];
+                    messages.ForEach(async message => await message.DeleteAsync());
+                    messages.Clear();
                 }
                 else
                 {
-                    // Stream went online OR title changed OR game changed
-                    var embed = await CreateStreamEmbed(streamEvent);
-                    messages.ForEach(async message =>
+                    var streamEvent = streamEvents.Data[0];
+                    var messages = _messageCache[username];
+                    var gameName = await _twitch.GetGameName(streamEvent.GameId);
+
+                    if (messages.Count == 0)
                     {
-                        await message.ModifyAsync(prop =>
+                        // Streamer just went live
+                        foreach (var channelId in streamChannelIds)
                         {
-                            prop.Embed = embed;
+                            if (channelId == 0) continue;
+                            var channel = (SocketTextChannel) _client.GetChannel(channelId);
+                            var message = await channel.SendMessageAsync(embed: await CreateStreamEmbed(streamEvent));
+                            messages.Add(message);
+                        }
+                    }
+                    else
+                    {
+                        // Stream went online OR title changed OR game changed
+                        var embed = await CreateStreamEmbed(streamEvent);
+                        messages.ForEach(async message =>
+                        {
+                            await message.ModifyAsync(prop =>
+                            {
+                                prop.Embed = embed;
+                            });
                         });
-                    });
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "HandleStreamEvent error");
             }
         }
 
