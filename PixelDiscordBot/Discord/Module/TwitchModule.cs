@@ -28,6 +28,7 @@ namespace PixelDiscordBot.Discord.Module
         }
 
         [Command("add")]
+        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task AddStreamer(string username)
         {
             var guildId = this.Context.Guild.Id;
@@ -77,6 +78,7 @@ namespace PixelDiscordBot.Discord.Module
         }
 
         [Command("remove")]
+        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task RemoveStreamer(string username)
         {
             var guildId = this.Context.Guild.Id;
@@ -112,6 +114,7 @@ namespace PixelDiscordBot.Discord.Module
         }
 
         [Command("setchannel")]
+        [RequireUserPermission(GuildPermission.Administrator)]
         public async Task SetStreamChannel(IChannel channel)
         {
             var guildId = this.Context.Guild.Id;
