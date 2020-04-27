@@ -38,13 +38,13 @@ namespace PixelDiscordBot
                 PropertyNamingPolicy = new SnakeCaseNamingPolicy(),
                 PropertyNameCaseInsensitive = true
             };
-            var config = JsonSerializer.Deserialize<Config>(File.ReadAllText("config.json"), jsonOptions);
+            var config = JsonSerializer.Deserialize<Config>(File.ReadAllText("./Data/config.json"), jsonOptions);
             services.AddSingleton(config);
 
             services.AddDbContext<DiscordContext>(options =>
             {
                 // options.UseInMemoryDatabase("Discord");
-                options.UseSqlite("Data Source=discordbot.sqlite3");
+                options.UseSqlite("Data Source=./Data/discordbot.sqlite3");
             });
 
             services.AddSingleton<IServiceCollection>(services);
