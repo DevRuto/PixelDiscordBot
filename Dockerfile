@@ -18,4 +18,5 @@ RUN dotnet publish "PixelDiscordBot.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+ENV ASPNETCORE_URLS http://*:8090
 ENTRYPOINT ["dotnet", "PixelDiscordBot.dll"]
