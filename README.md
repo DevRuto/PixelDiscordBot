@@ -8,7 +8,16 @@ Maybe one day this project will be rewritten with nicer code but for now, woot i
 
 ## Twitch protocol: [doc](./TWITCH.md)
 
+# Config
+1. Enter the `PixelDiscordBot` directory
+2. Rename or copy `config.sample.json` to `config.json`
+3. Fill in the values for `config.json`
+4. Run the command: `dotnet publish -c Release -o Release`
+5. Go to the `Release` directory
+6. Run `dotnet PixelDiscordBot.dll`
+
 # Docker
+> You need to follow the Config step and link the Data directory in the `-v` arg in the docker command
 ```
 docker build -t pixelbot .`
 `docker run -it -p 5000:5000 -v $(pwd)/Data:/app/Data --rm --name pixeldiscordbot pixelbot
