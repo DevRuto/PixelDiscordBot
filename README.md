@@ -17,7 +17,7 @@ Maybe one day this project will be rewritten with nicer code but for now, woot i
 6. Run `dotnet PixelDiscordBot.dll`
 
 # Docker
-> You need to follow the Config step and link the Data directory in the `-v` arg in the docker command
+> You need to follow the Config step 1-3 and link the Data directory in the `-v` arg in the docker command
 ```
 docker build -t pixelbot .`
 `docker run -it -p 5000:5000 -v $(pwd)/Data:/app/Data --rm --name pixeldiscordbot pixelbot
