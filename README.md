@@ -19,6 +19,7 @@ Maybe one day this project will be rewritten with nicer code but for now, woot i
 
 # Twitch Commands
 
+* `!twitch setchannel #streams` - Sets the stream announcement channel to #streams
 * `!twitch list` - list streamers
 * `!twitch add <streamer>` - add streamer
 * `!twitch remove <streamer>` - remove streamer
