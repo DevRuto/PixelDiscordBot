@@ -42,6 +42,8 @@ namespace PixelDiscordBot.Discord.Module
                     Id = guildId,
                     StreamChannelId = 0,
                     AnnounceRoleId = 0,
+                    EnableVods = false,
+                    VodChannelId = 0,
                     Streamers = new List<string>()
                 };
                 await _db.Guilds.AddAsync(guild);
@@ -129,6 +131,8 @@ namespace PixelDiscordBot.Discord.Module
                     Id = guildId,
                     StreamChannelId = 0,
                     AnnounceRoleId = 0,
+                    EnableVods = false,
+                    VodChannelId = 0,
                     Streamers = new List<string>()
                 };
                 await _db.Guilds.AddAsync(guild);
@@ -152,6 +156,8 @@ namespace PixelDiscordBot.Discord.Module
                     Id = guildId,
                     StreamChannelId = 0,
                     AnnounceRoleId = 0,
+                    EnableVods = false,
+                    VodChannelId = 0,
                     Streamers = new List<string>()
                 };
                 await _db.Guilds.AddAsync(guild);
@@ -179,6 +185,8 @@ namespace PixelDiscordBot.Discord.Module
                     Id = guildId,
                     StreamChannelId = 0,
                     AnnounceRoleId = 0,
+                    EnableVods = false,
+                    VodChannelId = 0,
                     Streamers = new List<string>()
                 };
                 await _db.Guilds.AddAsync(guild);
@@ -189,10 +197,66 @@ namespace PixelDiscordBot.Discord.Module
             await ReplyAsync("Announce Role cleared");
         }
 
+        [Command("togglevod")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task ToggleVods()
+        {
+            var guildId = this.Context.Guild.Id;
+            var guild = await _db.Guilds.FindAsync(guildId);
+            if (guild == null)
+            {
+                guild = new Guild
+                {
+                    Id = guildId,
+                    StreamChannelId = 0,
+                    AnnounceRoleId = 0,
+                    EnableVods = false,
+                    VodChannelId = 0,
+                    Streamers = new List<string>()
+                };
+                await _db.Guilds.AddAsync(guild);
+                await _db.SaveChangesAsync();
+            }
+            guild.EnableVods = !guild.EnableVods;
+            await _db.SaveChangesAsync();
+            await ReplyAsync($"VODs has been {(guild.EnableVods ? "enabled" : "disabled")}");
+        }
+
+        [Command("setvodchannel")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task SetVodsChannel(IChannel channel)
+        {
+            var guildId = this.Context.Guild.Id;
+            var guild = await _db.Guilds.FindAsync(guildId);
+            if (guild == null)
+            {
+                guild = new Guild
+                {
+                    Id = guildId,
+                    StreamChannelId = 0,
+                    AnnounceRoleId = 0,
+                    EnableVods = false,
+                    VodChannelId = 0,
+                    Streamers = new List<string>()
+                };
+                await _db.Guilds.AddAsync(guild);
+                await _db.SaveChangesAsync();
+            }
+            guild.VodChannelId = channel.Id;
+            await ReplyAsync($"VOD channel set to <#{channel.Id}>");
+        }
+
         [Command("testembed")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task TestEmbed()
         {
+            var guildId = this.Context.Guild.Id;
+            var guild = await _db.Guilds.FindAsync(guildId);
+            string mention = null;
+            if (guild.AnnounceRoleId > 0)
+            {
+                mention = $"<@&{guild.AnnounceRoleId}>";
+            }
             var streamEvent = new Models.Twitch.StreamEvent
             {
                 Id = "1",
@@ -206,7 +270,7 @@ namespace PixelDiscordBot.Discord.Module
                 Language = "en",
                 ThumbnailUrl = "https://static-cdn.jtvnw.net/ttv-boxart/Counter-Strike:%20Global%20Offensive-1280x720.jpg"
             };
-            await ReplyAsync("Test", embed: await _bot.CreateStreamEmbed(streamEvent));
+            await ReplyAsync(message: mention, embed: await _bot.CreateStreamEmbed(streamEvent));
         }
     }
 }

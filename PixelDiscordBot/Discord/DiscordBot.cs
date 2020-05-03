@@ -80,6 +80,20 @@ namespace PixelDiscordBot.Discord
                     var messages = _messageCache[username];
                     messages.ForEach(async message => await message.DeleteAsync());
                     messages.Clear();
+
+                    var vodGuilds = guilds.Where(guild => guild.EnableVods).ToList();
+
+                    if (vodGuilds.Count == 0) return;
+                    var vod = (await _twitch.GetVods(username)).Data.FirstOrDefault();
+                    if (vod == null) return;
+                    var embed = await CreateVodEmbed(vod);
+
+                    foreach (var guild in vodGuilds)
+                    {
+                        if (guild.VodChannelId <= 0) continue;
+                        var channel = (SocketTextChannel) _client.GetChannel(guild.VodChannelId);
+                        await channel.SendMessageAsync(embed: embed);
+                    }
                 }
                 else
                 {
@@ -135,6 +149,17 @@ namespace PixelDiscordBot.Discord
                         .WithUrl($"https://twitch.tv/{streamEvent.UserName}")
                         .WithImageUrl(streamEvent.ThumbnailUrl.Replace("{width}", "1280").Replace("{height}", "720"))
                         .WithCurrentTimestamp()
+                        .Build();
+
+        public async Task<Embed> CreateVodEmbed(Video vod)
+            => new EmbedBuilder()
+                        .WithTitle($"{vod.UserName} VOD")
+                        .AddField("Title", vod.Title, false)
+                        .AddField("Date", vod.CreatedAt.ToLongDateString(), true)
+                        .AddField("Duration", vod.Duration, true)
+                        .WithColor(Color.Red)
+                        .WithUrl(vod.Url)
+                        .WithImageUrl(vod.ThumbnailUrl.Replace("%{width}", "1280").Replace("%{height}", "720"))
                         .Build();
     }
 }

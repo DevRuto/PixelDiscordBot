@@ -12,6 +12,8 @@ using System.Web;
 using Microsoft.Extensions.Logging;
 using PixelDiscordBot.Models;
 using PixelDiscordBot.Models.Discord;
+using PixelDiscordBot.Models.Twitch;
+using PixelDiscordBot.Serialization;
 
 namespace PixelDiscordBot.Services
 {
@@ -23,6 +25,8 @@ namespace PixelDiscordBot.Services
         {
             { 0, "null" }
         };
+    
+        private static readonly Dictionary<string, ulong> _userCache = new Dictionary<string, ulong>();
 
         private static string _oauthToken = null;
 
@@ -68,6 +72,8 @@ namespace PixelDiscordBot.Services
     
         public async Task<ulong> GetUserId(string username)
         {
+            if (_userCache.ContainsKey(username.ToLower()))
+                return _userCache[username];
             var url = $"https://api.twitch.tv/helix/users?login={username}";
             var client = new WebClient();
             client.Headers["Client-ID"] = _config.Twitch.ClientId;
@@ -78,7 +84,9 @@ namespace PixelDiscordBot.Services
             if (data.GetArrayLength() == 0) return 0;
             foreach (var ele in data.EnumerateArray())
             {
-                return ulong.Parse(ele.GetProperty("id").GetString());
+                var id = ulong.Parse(ele.GetProperty("id").GetString());
+                _userCache.Add(username.ToLower(), id);
+                return id;
             }
             return 0;
         }
@@ -104,6 +112,23 @@ namespace PixelDiscordBot.Services
                 return name;
             }
             return "Unknown";
+        }
+
+        private static JsonSerializerOptions jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = new SnakeCaseNamingPolicy()
+        };
+
+        public async Task<Videos> GetVods(string username)
+        {
+            var userId = await GetUserId(username);
+            var url = $"https://api.twitch.tv/helix/videos?user_id={userId}";
+            var client = new WebClient();
+            client.Headers["Client-ID"] = _config.Twitch.ClientId;
+            client.Headers["Authorization"] = $"Bearer {await GetAuthToken()}";
+            var response = await client.DownloadStringTaskAsync(new Uri(url));
+            return JsonSerializer.Deserialize<Videos>(response, jsonOptions);
         }
 
         private static List<Streamer> _trackedStreamers = new List<Streamer>();

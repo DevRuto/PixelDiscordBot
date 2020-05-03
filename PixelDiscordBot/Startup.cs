@@ -69,17 +69,16 @@ namespace PixelDiscordBot
         {
             ctx.Database.EnsureCreated();
             var queries = new string[] {
-                "ALTER TABLE Guild ADD COLUMN AnnounceRoleId INTEGER DEFAULT 0 NOT NULL"
+                "ALTER TABLE Guild ADD COLUMN AnnounceRoleId INTEGER DEFAULT 0 NOT NULL",
+                "ALTER TABLE Guild ADD COLUMN EnableVods INTEGER DEFAULT 0 NOT NULL",
+                "ALTER TABLE Guild ADD COLUMN VodChannelId INTEGER DEFAULT 0 NOT NULL",
             };
             foreach (var query in queries)
             {
                 try
                 {
                     ctx.Database.ExecuteSqlRaw(query);
-                } catch (Exception ex) 
-                {
-                    Console.WriteLine(ex);
-                }
+                } catch {}
             }
             bot.Start();
 
