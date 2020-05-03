@@ -23,6 +23,8 @@ Maybe one day this project will be rewritten with nicer code but for now, woot i
 * `!twitch list` - list streamers
 * `!twitch add <streamer>` - add streamer
 * `!twitch remove <streamer>` - remove streamer
+* `!twitch setannouncer @StreamAnnounce` - sets the role to announce (optional)
+* `!twitch clearannouncer` - clears the role to announce
 
 # Docker
 
