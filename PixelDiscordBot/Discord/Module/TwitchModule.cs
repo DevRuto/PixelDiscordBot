@@ -243,6 +243,7 @@ namespace PixelDiscordBot.Discord.Module
                 await _db.SaveChangesAsync();
             }
             guild.VodChannelId = channel.Id;
+            await _db.SaveChangesAsync();
             await ReplyAsync($"VOD channel set to <#{channel.Id}>");
         }
 
