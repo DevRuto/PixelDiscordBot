@@ -10,6 +10,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PixelDiscordBot.Models;
+using PixelDiscordBot.Models.Discord;
 using PixelDiscordBot.Models.Twitch;
 using PixelDiscordBot.Services;
 
@@ -58,11 +59,12 @@ namespace PixelDiscordBot.Discord
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()
                 .AddSingleton<HttpClient>()
+                .AddSingleton(this)
                 .BuildServiceProvider();
         }
 
         private static readonly Dictionary<string, List<RestUserMessage>> _messageCache = new Dictionary<string, List<RestUserMessage>>();
-        public async Task HandleStreamEvent(string username, Event streamEvents, params ulong[] streamChannelIds)
+        public async Task HandleStreamEvent(string username, Event streamEvents, Guild[] guilds)
         {
             if (!_messageCache.ContainsKey(username))
                 _messageCache.Add(username, new List<RestUserMessage>());
@@ -88,17 +90,24 @@ namespace PixelDiscordBot.Discord
                     if (messages.Count == 0)
                     {
                         // Streamer just went live
-                        foreach (var channelId in streamChannelIds)
+                        foreach (var guild in guilds)
                         {
+                            var channelId = guild.StreamChannelId;
+                            var roleId = guild.AnnounceRoleId;
                             if (channelId == 0) continue;
                             var channel = (SocketTextChannel) _client.GetChannel(channelId);
-                            var message = await channel.SendMessageAsync(embed: await CreateStreamEmbed(streamEvent));
+                            string mention = null;
+                            if (roleId > 0)
+                            {
+                                mention = $"<@&{roleId}>";
+                            }
+                            var message = await channel.SendMessageAsync(text: mention, embed: await CreateStreamEmbed(streamEvent));
                             messages.Add(message);
                         }
                     }
                     else
                     {
-                        // Stream went online OR title changed OR game changed
+                        // Stream title changed OR game changed
                         var embed = await CreateStreamEmbed(streamEvent);
                         messages.ForEach(async message =>
                         {
@@ -116,7 +125,7 @@ namespace PixelDiscordBot.Discord
             }
         }
 
-        private async Task<Embed> CreateStreamEmbed(StreamEvent streamEvent)
+        public async Task<Embed> CreateStreamEmbed(StreamEvent streamEvent)
             => new EmbedBuilder()
                         .WithTitle($"{streamEvent.UserName} went live")
                         .AddField("Title", streamEvent.Title, false)

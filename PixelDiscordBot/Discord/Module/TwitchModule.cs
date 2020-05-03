@@ -14,11 +14,13 @@ namespace PixelDiscordBot.Discord.Module
     {
         private readonly DiscordContext _db;
         private readonly TwitchService _twitch;
+        private readonly DiscordBot _bot;
 
-        public TwitchModule(DiscordContext db, TwitchService twitch)
+        public TwitchModule(DiscordContext db, TwitchService twitch, DiscordBot bot)
         {
             _db = db;
             _twitch = twitch;
+            _bot = bot;
         }
 
         [Command("ping")]
@@ -39,6 +41,7 @@ namespace PixelDiscordBot.Discord.Module
                 {
                     Id = guildId,
                     StreamChannelId = 0,
+                    AnnounceRoleId = 0,
                     Streamers = new List<string>()
                 };
                 await _db.Guilds.AddAsync(guild);
@@ -125,6 +128,7 @@ namespace PixelDiscordBot.Discord.Module
                 {
                     Id = guildId,
                     StreamChannelId = 0,
+                    AnnounceRoleId = 0,
                     Streamers = new List<string>()
                 };
                 await _db.Guilds.AddAsync(guild);
@@ -133,6 +137,76 @@ namespace PixelDiscordBot.Discord.Module
             guild.StreamChannelId = channel.Id;
             await _db.SaveChangesAsync();
             await ReplyAsync($"Stream channel set to <#{channel.Id}>");
+        }
+
+        [Command("setannouncer")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task SetAnnouncerRole(IRole role)
+        {
+            var guildId = this.Context.Guild.Id;
+            var guild = await _db.Guilds.FindAsync(guildId);
+            if (guild == null)
+            {
+                guild = new Guild
+                {
+                    Id = guildId,
+                    StreamChannelId = 0,
+                    AnnounceRoleId = 0,
+                    Streamers = new List<string>()
+                };
+                await _db.Guilds.AddAsync(guild);
+                await _db.SaveChangesAsync();
+            }
+            if (!role.IsMentionable)
+            {
+                await ReplyAsync("WARNING: Role is not mentionable");
+            }
+            guild.AnnounceRoleId = role.Id;
+            await _db.SaveChangesAsync();
+            await ReplyAsync($"Announce Role set to: {role.Name}");
+        }
+
+        [Command("clearannouncer")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task ClearAnnouncerRole()
+        {
+            var guildId = this.Context.Guild.Id;
+            var guild = await _db.Guilds.FindAsync(guildId);
+            if (guild == null)
+            {
+                guild = new Guild
+                {
+                    Id = guildId,
+                    StreamChannelId = 0,
+                    AnnounceRoleId = 0,
+                    Streamers = new List<string>()
+                };
+                await _db.Guilds.AddAsync(guild);
+                await _db.SaveChangesAsync();
+            }
+            guild.AnnounceRoleId = 0;
+            await _db.SaveChangesAsync();
+            await ReplyAsync("Announce Role cleared");
+        }
+
+        [Command("testembed")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task TestEmbed()
+        {
+            var streamEvent = new Models.Twitch.StreamEvent
+            {
+                Id = "1",
+                UserId = "133549408",
+                UserName = "rutokz",
+                GameId = "32399",
+                Type = "live",
+                Title = "Test Stream Embed",
+                ViewerCount = 99999,
+                StartedAt = DateTime.Now,
+                Language = "en",
+                ThumbnailUrl = "https://static-cdn.jtvnw.net/ttv-boxart/Counter-Strike:%20Global%20Offensive-1280x720.jpg"
+            };
+            await ReplyAsync("Test", embed: await _bot.CreateStreamEmbed(streamEvent));
         }
     }
 }

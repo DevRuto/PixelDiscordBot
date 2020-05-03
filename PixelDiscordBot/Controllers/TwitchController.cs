@@ -58,11 +58,11 @@ namespace PixelDiscordBot.Controllers
         {
             _logger.LogInformation($"[TWITCH] Event change for {username} - {JsonSerializer.Serialize(streamEvents)}");
             var guilds = await _db.Guilds.ToListAsync();
-            var channelIds = guilds
-                                .Where(guild => guild.Streamers.Contains(username))
-                                .Select(guild => guild.StreamChannelId)
-                                .ToArray();
-            await _discord.HandleStreamEvent(username, streamEvents, channelIds);
+
+            var filteredGuilds = guilds
+                .Where(guild => guild.Streamers.Contains(username))
+                .ToArray();
+            await _discord.HandleStreamEvent(username, streamEvents, filteredGuilds);
             
             return Ok();
         }
