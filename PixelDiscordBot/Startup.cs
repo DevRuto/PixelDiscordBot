@@ -68,6 +68,19 @@ namespace PixelDiscordBot
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DiscordBot bot, DiscordContext ctx)
         {
             ctx.Database.EnsureCreated();
+            var queries = new string[] {
+                "ALTER TABLE Guild ADD COLUMN AnnounceRoleId INTEGER DEFAULT 0 NOT NULL"
+            };
+            foreach (var query in queries)
+            {
+                try
+                {
+                    ctx.Database.ExecuteSqlRaw(query);
+                } catch (Exception ex) 
+                {
+                    Console.WriteLine(ex);
+                }
+            }
             bot.Start();
 
             if (env.IsDevelopment())
