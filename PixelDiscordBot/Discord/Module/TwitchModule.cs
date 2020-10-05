@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Microsoft.EntityFrameworkCore;
 using PixelDiscordBot.Models;
 using PixelDiscordBot.Models.Discord;
 using PixelDiscordBot.Services;
@@ -98,6 +99,18 @@ namespace PixelDiscordBot.Discord.Module
                 {
                     guild.Streamers.Remove(username);
                     await ReplyAsync($"**{Format.Sanitize(username)}** removed");
+                }
+                bool unsub = true;
+                foreach (var g in _db.Guilds)
+                {
+                    if (g.Streamers.Contains(username))
+                        unsub = false;
+                }
+                if (unsub)
+                {
+                    var streamer = await _db.Streamers.FirstOrDefaultAsync(s => s.Username == username);
+                    await _twitch.Unsubscribe(streamer.Id, streamer.Username);
+                    _db.Streamers.Remove(streamer);
                 }
             }
             await _db.SaveChangesAsync();

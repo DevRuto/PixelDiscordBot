@@ -162,6 +162,32 @@ namespace PixelDiscordBot.Services
             }
         }
 
+        public async Task Unsubscribe(ulong userId, string username)
+        {
+            var streamer = _trackedStreamers.Find(streamer => streamer.Id == userId);
+            if (streamer != null)
+                _trackedStreamers.Remove(streamer);
+            _logger.LogInformation($"[TWITCH] Unsubscribing to {username}");
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("Client-ID", _config.Twitch.ClientId);
+                    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {await GetAuthToken()}");
+                    var json = $@"{{ ""hub.callback"": ""{_config.CallbackUrl}/{username}"", ""hub.mode"": ""unsubscribe"", ""hub.topic"": ""https://api.twitch.tv/helix/streams?user_id={userId}"", ""hub.lease_seconds"": 108000, ""hub.secret"": ""asdf"" }}";
+                    var response = await client.PostAsync(
+                        "https://api.twitch.tv/helix/webhooks/hub",
+                        new StringContent(json, Encoding.UTF8, "application/json")
+                    );
+                    _logger.LogInformation($"[TWITCH] {username} unsubscribe Result: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, $"Welp - {ex.ToString()}");
+            }
+        }
+
         public Task RenewSubscriptions()
         {
             _trackedStreamers.ForEach(async streamer => await Subscribe(streamer.Id, streamer.Username, true));

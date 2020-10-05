@@ -66,6 +66,7 @@ namespace PixelDiscordBot.Discord
         private static readonly Dictionary<string, List<RestUserMessage>> _messageCache = new Dictionary<string, List<RestUserMessage>>();
         public async Task HandleStreamEvent(string username, Event streamEvents, Guild[] guilds)
         {
+            _logger.LogDebug("Logging {username} to {guilds}", username, guilds);
             if (!_messageCache.ContainsKey(username))
                 _messageCache.Add(username, new List<RestUserMessage>());
 
